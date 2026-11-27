@@ -1,0 +1,18 @@
+{
+  "name": "빈 강의실 찾기 — 세종대 2026-2학기",
+  "short_name": "빈 강의실",
+  "description": "2026-2학기 강의시간표로 주요 5개 건물에서 지금 비어 있는 강의실과 언제까지 비어 있는지를 보여 줍니다.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

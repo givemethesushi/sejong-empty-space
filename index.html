@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>빈 강의실 찾기</title>
+  <meta name="description" content="2026-2학기 강의시간표로 주요 5개 건물에서 지금 비어 있는 강의실과 언제까지 비어 있는지를 보여 줍니다." />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="빈 강의실" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="./icons/icon.svg" />
+  <link rel="apple-touch-icon" href="./icons/icon.svg" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <link rel="stylesheet" href="./css/style.css?v=8" />
+</head>
+<body>
+  <main class="container">
+    <!-- Header -->
+    <header class="page-header">
+      <div class="header-top">
+        <div>
+          <h1 class="page-title">빈 강의실 찾기</h1>
+          <p class="page-subtitle">
+            2026-2학기 강의시간표로 주요 5개 건물에서 지금 비어 있는 강의실과, 언제까지 비어 있는지를 보여 줍니다.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button type="button" id="btnNow" class="action-pill" title="현재 요일과 시각으로 맞추기">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>지금 시각</span>
+          </button>
+          <button type="button" id="btnOpenNearby" class="action-pill" title="내 수업 강의실과 가까운 빈 강의실 찾기">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span>내 수업 근처</span>
+          </button>
+          <button type="button" id="btnOpenAi" class="action-pill action-pill--primary" title="자연어로 빈 강의실 물어보기">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>AI 질문</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Library (학술정보원) Quick Context Banner -->
+    <section class="library-banner" aria-label="학술정보원 좌석 현황 연계">
+      <div class="library-banner-left">
+        <span class="library-dot" aria-hidden="true"></span>
+        <span><strong>학술정보원(학정) 959석</strong>이 붐빌 때, 비어 있는 근처 강의실을 바로 찾아보세요.</span>
+      </div>
+      <a
+        href="https://library.sejong.ac.kr/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="library-link"
+      >학정 좌석 현황 ↗</a>
+    </section>
+
+    <!-- 4 Filters -->
+    <section class="filters" aria-label="강의실 검색 필터">
+      <div class="filter-group">
+        <label class="filter-label" for="selectDay">요일</label>
+        <div class="select-wrap">
+          <select id="selectDay" class="filter-select">
+            <option value="월">월요일</option>
+            <option value="화">화요일</option>
+            <option value="수">수요일</option>
+            <option value="목">목요일</option>
+            <option value="금">금요일</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label" for="selectTime">시각</label>
+        <div class="select-wrap">
+          <select id="selectTime" class="filter-select"></select>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label" for="selectBuilding">건물</label>
+        <div class="select-wrap">
+          <select id="selectBuilding" class="filter-select">
+            <option value="전체">전체 건물 (5곳)</option>
+            <option value="광개토관">광개토관</option>
+            <option value="대양AI센터">대양AI센터</option>
+            <option value="집현관">집현관</option>
+            <option value="충무관">충무관</option>
+            <option value="군자관">군자관</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label" for="selectMinHours">최소 비어 있는 시간</label>
+        <div class="select-wrap">
+          <select id="selectMinHours" class="filter-select">
+            <option value="30">30분 이상</option>
+            <option value="60">1시간 이상</option>
+            <option value="120" selected>2시간 이상</option>
+            <option value="180">3시간 이상</option>
+            <option value="240">4시간 이상</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Filter & Sort Toolbar -->
+    <section class="sub-toolbar" aria-label="층수 필터 및 정렬">
+      <div class="floor-chips" role="group" aria-label="층수 필터">
+        <button type="button" class="filter-chip is-active" data-floor="all">
+          전체 층 <span class="chip-count" id="countAllFloor">0</span>
+        </button>
+        <button type="button" class="filter-chip" data-floor="low">
+          3층 이하 <span class="chip-count" id="countLowFloor">0</span>
+        </button>
+        <button type="button" class="filter-chip" data-floor="high">
+          4층 이상 <span class="chip-count" id="countHighFloor">0</span>
+        </button>
+        <button type="button" class="filter-chip" data-floor="fav">
+          ★ 즐겨찾기 <span class="chip-count" id="countFav">0</span>
+        </button>
+      </div>
+
+      <div class="sort-toggle" role="group" aria-label="정렬 기준">
+        <button type="button" class="sort-btn is-active" data-sort="id">호수순</button>
+        <button type="button" class="sort-btn" data-sort="duration">오래 비는 순</button>
+      </div>
+    </section>
+
+    <!-- Active Anchor Banner (Near My Class) -->
+    <section class="anchor-banner hidden" id="anchorBanner" aria-live="polite">
+      <div class="anchor-banner-text" id="anchorBannerText"></div>
+      <button type="button" class="anchor-clear-btn" id="btnClearAnchor">해제</button>
+    </section>
+
+    <!-- Evening Official Opening Banner (18:00~22:00) -->
+    <section class="evening-banner hidden" id="eveningBanner" aria-live="polite"></section>
+
+    <!-- Summary Header -->
+    <section class="summary-bar" aria-live="polite">
+      <div class="summary-count" id="summaryCount">0실</div>
+      <div class="summary-desc" id="summaryDesc"></div>
+    </section>
+
+    <!-- Results Grid -->
+    <section class="room-grid" id="roomGrid" aria-label="빈 강의실 목록"></section>
+
+    <!-- Empty State -->
+    <section class="empty-state hidden" id="emptyState">
+      <p class="empty-title" id="emptyTitle">조건에 맞는 빈 강의실이 없습니다.</p>
+      <p class="empty-sub" id="emptySub">최소 비어 있는 시간을 줄이거나 다른 건물을 선택해 보세요.</p>
+      <button type="button" class="empty-action-btn hidden" id="btnSwitchGwang">광개토관 1~4층 빈 강의실 보기 →</button>
+    </section>
+
+    <!-- Footer Disclaimer -->
+    <footer class="page-footer">
+      <span>2026-2학기 정규 강의시간표 기준 (주요 5개 건물 이론 강의실 79실) · 보강 및 대관 일정은 반영되지 않습니다.</span>
+    </footer>
+  </main>
+
+  <!-- Room Detail Modal -->
+  <div class="modal-backdrop hidden" id="roomModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalRoomTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="modalRoomTitle">광102</h2>
+          <p class="modal-subtitle" id="modalRoomSub">광개토관 · 추정 약 50석</p>
+        </div>
+        <button type="button" class="icon-close" id="btnCloseRoomModal" aria-label="닫기">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-status-box" id="modalStatusBox"></div>
+
+        <div class="timeline-section">
+          <div class="section-label">오늘 시간표 (09:00 ~ 22:00)</div>
+          <div class="timeline-bar" id="modalTimelineBar"></div>
+          <div class="timeline-ticks">
+            <span>09시</span>
+            <span>12시</span>
+            <span>15시</span>
+            <span>18시</span>
+            <span>22시</span>
+          </div>
+          <div class="timeline-legend">
+            <span class="legend-item"><i class="dot dot--free"></i>비어 있음</span>
+            <span class="legend-item"><i class="dot dot--busy"></i>수업 중</span>
+            <span class="legend-item"><i class="dot dot--now"></i>선택 시각</span>
+          </div>
+        </div>
+
+        <div class="class-list-section">
+          <div class="section-label" id="modalClassListLabel">예정된 수업</div>
+          <ul class="class-list" id="modalClassList"></ul>
+        </div>
+
+        <div class="report-section">
+          <div class="section-label">현장 상태 제보 (시간표 외 보강·시험·잠김)</div>
+          <div class="report-actions" id="modalReportActions">
+            <button type="button" class="report-btn" data-report="occupied">⚠️ 지금 수업·시험 중이에요</button>
+            <button type="button" class="report-btn" data-report="locked">🔒 문이 잠겨 있어요</button>
+            <button type="button" class="report-btn report-btn--clear hidden" id="btnClearReport">제보 취소</button>
+          </div>
+          <p class="report-note" id="modalReportNote"></p>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        시간표 기준이며 보강·대관 일정은 반영되지 않았습니다.
+      </div>
+    </div>
+  </div>
+
+  <!-- Near My Class Modal -->
+  <div class="modal-backdrop hidden" id="nearbyModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="nearbyModalTitle">
+    <div class="modal-card modal-card--nearby">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="nearbyModalTitle">내 수업 근처 빈 강의실</h2>
+          <p class="modal-subtitle">수업명·교수명·강의실(예: 경영학원론, 선형대수, 광202)을 검색해 보세요.</p>
+        </div>
+        <button type="button" class="icon-close" id="btnCloseNearbyModal" aria-label="닫기">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="nearby-search-box">
+        <input
+          type="text"
+          id="nearbySearchInput"
+          class="ai-input"
+          placeholder="과목명, 교수명, 또는 강의실 입력 (예: 경영학원론, 광202)"
+          autocomplete="off"
+        />
+        <div class="nearby-mode-row">
+          <label class="nearby-radio"><input type="radio" name="nearbyWhen" value="after" checked /> 수업 직후 빈 강의실</label>
+          <label class="nearby-radio"><input type="radio" name="nearbyWhen" value="before" /> 수업 2시간 전 공강</label>
+        </div>
+      </div>
+
+      <div class="nearby-results" id="nearbyResults"></div>
+    </div>
+  </div>
+
+  <!-- AI Natural Language Assistant Drawer -->
+  <div class="modal-backdrop hidden" id="aiModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="aiModalTitle">
+    <div class="modal-card modal-card--ai">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="aiModalTitle">AI 빈 강의실 안내</h2>
+          <p class="modal-subtitle">자연어로 물으면 시간표 조회 도구(find_empty_rooms)를 호출해 결과로만 답합니다.</p>
+        </div>
+        <button type="button" class="icon-close" id="btnCloseAiModal" aria-label="닫기">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="ai-messages" id="aiMessages">
+        <div class="ai-msg ai-msg--bot">
+          <p>안녕하세요! 원하는 요일·시간·건물·공부 시간을 편하게 물어보세요.</p>
+          <div class="ai-chips">
+            <button type="button" class="ai-chip" data-q="목요일 18시에 광개토관에서 2시간 이상 비는 강의실">목요일 18시 광개토관 2시간+</button>
+            <button type="button" class="ai-chip" data-q="광개토관 3층 이하에서 지금 2시간 비는 곳">광개토관 3층 이하 2시간+</button>
+            <button type="button" class="ai-chip" data-q="지금 대양AI센터에서 1시간 이상 비어 있는 곳">지금 대양AI센터 1시간+</button>
+            <button type="button" class="ai-chip" data-q="금요일 오후 2시에 집현관 빈 강의실">금요일 오후 2시 집현관</button>
+          </div>
+        </div>
+      </div>
+
+      <form class="ai-input-bar" id="aiForm">
+        <input
+          type="text"
+          id="aiInput"
+          class="ai-input"
+          placeholder="예: 목요일 오후 6시에 광개토관 2시간 비는 곳"
+          autocomplete="off"
+        />
+        <button type="submit" class="ai-submit">질문</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="./js/schedule-data.js?v=8"></script>
+  <script src="./js/app.js?v=8"></script>
+</body>
+</html>

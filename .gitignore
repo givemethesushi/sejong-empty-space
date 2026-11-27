@@ -1,0 +1,4 @@
+.netlify/
+.DS_Store
+Thumbs.db
+data/timetable_2026_2.xlsx
